@@ -7,10 +7,13 @@ import csv; import datetime; import pytz
 from technical_indicators import BBANDS
 from historical_data import exchange_data,write_to_csv,to_unix_time
 # import backtest
+import oms
+import warnings
+warnings.filterwarnings('ignore')
 
 # ==========Initial trade parameters =============
 symbol = 'BTC/USD'
-timeframe = '5m'
+timeframe = '1h'
 trading_qty = 1.0
 since = '2017-01-01 00:00:00'
 hist_start_date = int(to_unix_time(since))
@@ -24,12 +27,14 @@ write_to_csv(kraken,'BTC/USD','kraken')
 data = pd.DataFrame(kraken, columns=header)
 print(data.head())
 
+def ema(data,period):
+    ema = data['Close'].ewm(span=period, adjust=False).mean()
+    return ema
 
-# ======= Find out which EMA optimizes the cumulative return =======
 # ============ Strategy Function - Exponential Moving average crossover ================
 def strategy(data):
     for period in range(20,100,5):
-        ema_short = data['Close'].ewm(span=period, adjust=False).mean()
+        ema_short = ema(data,period)
 
         # Difference between prices & EMA timeseries
         trading_positions_raw = data['Close'] - ema_short
@@ -70,3 +75,10 @@ returns, equity_curve = strategy(data)
 print(returns, equity_curve)
 # backtest.drawdown_periods(returns)
 # backtest.underwater_plot(returns)
+
+# ==== 100 Period EMA is found to be optimised ====
+
+
+
+
+
