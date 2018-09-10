@@ -15,8 +15,7 @@ timeframe = str('1d')
 # exchange = str('okex')
 start_date = str('2018-01-01')
 get_data = True
-reqd_balance = 1000
-
+ema_period = 100
 
 exchange_id = 'kraken'
 exchange_class = getattr(ccxt, exchange_id)
@@ -27,13 +26,28 @@ exchange = exchange_class({
     'enableRateLimit': True,
 })
 
-data = exchange_data(exchange_id,symbol,timeframe='1m',since=start_date)
-def initiate_trade(exchange,symbol):
-    ema_short = data['Close'].ewm(span=100, adjust=False).mean()
-    bid, ask = oms.order_book(exchange,symbol,5)
-    price = (bid+ask)/2
+# =============== Strategy 1 - Moving average crossover =================
+data_macross = exchange_data(exchange_id, symbol, timeframe='1m', since=start_date)
+def init_macross(exchange,symbol):
+    ema_short = strat_movavgcross.ema(data_macross, ema_period)
+    bid, ask = oms.order_book(exchange, symbol, 5)
+    buy_condition = bid > ema_short
+    sell_condition = ask < ema_short
 
-    if price > ema_short:
-        exchange.create_limit_buy_order(symbol,1,)
+    init_trade = oms.create_trade(exchange, symbol)
+    exit_trade = oms.closeout_trade(exchange, symbol)
 
-# =================INCOMPLETE CODE ===================
+
+# =============== Strategy 2  ================================
+'''
+Details of Strategy 2
+'''
+
+# =============== Strategy 3  ================================
+'''
+Details of Strategy 3
+'''
+
+
+
+
